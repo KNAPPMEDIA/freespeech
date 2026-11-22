@@ -1,0 +1,52 @@
+name: macOS-Build
+
+# Nur von Hand starten: Mac-Laufzeit zaehlt bei privaten Repos zehnfach.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14   # Apple Silicon
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Icons aus der 1024er-Vorlage erzeugen
+        run: npx --yes @tauri-apps/cli@2 icon src-tauri/icons/icon-1024.png --output src-tauri/icons
+
+      - name: App und DMG bauen
+        run: npx --yes @tauri-apps/cli@2 build 2>&1 | tee build.log
+
+      - name: App als ZIP packen (auch wenn das DMG scheitert)
+        if: always()
+        run: |
+          APP=src-tauri/target/release/bundle/macos/FreeSpeech.app
+          if [ -d "$APP" ]; then ditto -c -k --keepParent "$APP" FreeSpeech-macOS-arm64.zip; fi
+          ls -la src-tauri/target/release/bundle/* 2>/dev/null || true
+
+      - name: Build-Protokoll sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+
+      - name: Ergebnis hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeSpeech-macOS-arm64
+          if-no-files-found: warn
+          path: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            FreeSpeech-macOS-arm64.zip
