@@ -340,6 +340,7 @@ fn begin(app: &Ui, st: &Shared) {
         Ok(name) => {
             settings::log(&format!("Aufnahme gestartet: {name}"));
             st.phase.store(RECORDING, Ordering::SeqCst);
+            *TEST_BEGUN.lock().unwrap() = Some(Instant::now());
             hotkey::set_recording(true);
             if sounds {
                 paste::play(true);
@@ -395,7 +396,7 @@ fn preview_loop(app: Ui, st: Shared, id: u32) {
                     rounds += 1;
                     if test.is_some() {
                         settings::log(&format!(
-                            "Test: Vorschau {rounds} nach {} ms, {} ms Ton in {} ms, {} Zeichen",
+                            "Test: Vorschau {rounds} nach {} ms, {} ms Ton in {} ms, {} Zeichen | {text}",
                             begun.elapsed().as_millis(),
                             audio_ms,
                             started.elapsed().as_millis(),
@@ -460,6 +461,16 @@ fn replace_ci(hay: &str, needle: &str, with: &str) -> String {
     }
     out.push_str(&hay[pos..]);
     out
+}
+
+/// Nur zum Prüfen: Beginn der laufenden Aufnahme, damit die Pegelanzeige der
+/// Test-WAV folgen kann statt dem echten Mikrofon.
+static TEST_BEGUN: Mutex<Option<Instant>> = Mutex::new(None);
+
+/// Nur zum Prüfen: Millisekunden seit Beginn der laufenden Aufnahme, wenn eine Test-WAV läuft.
+fn test_ms() -> Option<u128> {
+    std::env::var_os("FREESPEECH_TEST_WAV")?;
+    TEST_BEGUN.lock().unwrap().map(|b| b.elapsed().as_millis())
 }
 
 /// Nur zum Prüfen: liest eine 16-Bit-WAV-Datei statt des Mikrofons
@@ -534,6 +545,9 @@ fn finish(app: &Ui, st: &Shared) {
 
     st.phase.store(TRANSCRIBING, Ordering::SeqCst);
     set_status(app, st, "transcribing", "");
+    if let Some(ms) = test_ms() {
+        settings::log(&format!("Test: Schreibt ab {ms} ms"));
+    }
     let (app, st) = (app.clone(), st.clone());
     std::thread::spawn(move || {
         let result = st.engine.run(pcm, &s.language, s.vocabulary.clone());
@@ -550,6 +564,9 @@ fn finish(app: &Ui, st: &Shared) {
                     return;
                 }
                 let delivered = paste::deliver(&text, &s.paste_method, s.restore_clipboard);
+                if let Some(ms) = test_ms() {
+                    settings::log(&format!("Test: Eingefügt nach {ms} ms | {text}"));
+                }
                 let model = settings::scan_models()
                     .into_iter()
                     .find(|m| m.path == s.model)
@@ -847,11 +864,18 @@ fn main() {
     let s3 = state.clone();
     std::thread::spawn(move || {
         let mut tick = 0u32;
+        let test_wav = std::env::var("FREESPEECH_TEST_WAV").ok().and_then(|p| read_test_wav(&p));
         loop {
             std::thread::sleep(Duration::from_millis(33));
             let phase = s3.phase.load(Ordering::Relaxed);
             if phase == RECORDING {
-                let _ = Ui.emit("level", s3.audio.level());
+                let mut level = s3.audio.level();
+                // Nur zum Prüfen: Pegel aus der Test-WAV an der Stelle, die gerade "läuft".
+                if let (Some(t), Some(b)) = (&test_wav, *TEST_BEGUN.lock().unwrap()) {
+                    let at = (b.elapsed().as_millis() as usize * 16).min(t.len());
+                    level = t[at.saturating_sub(530)..at].iter().fold(0.0f32, |m, v| m.max(v.abs()));
+                }
+                let _ = Ui.emit("level", level);
             }
             // Während Aufnahme und Schreiben die Anzeige etwa jede Sekunde wieder nach
             // oben holen, falls sich ein anderes Fenster davorgeschoben hat.
@@ -871,8 +895,10 @@ fn main() {
     // einmal so lange auf, ganz ohne Tastatur.
     if let Some(secs) = std::env::var("FREESPEECH_TEST_AUTORUN").ok().and_then(|v| v.parse::<f32>().ok()) {
         let auto = ctl_tx.clone();
+        // FREESPEECH_TEST_DELAY=<Millisekunden> verschiebt den Beginn (Standard 5 s).
+        let delay = std::env::var("FREESPEECH_TEST_DELAY").ok().and_then(|v| v.parse::<u64>().ok()).unwrap_or(5000);
         std::thread::spawn(move || {
-            std::thread::sleep(Duration::from_millis(5000));
+            std::thread::sleep(Duration::from_millis(delay));
             let _ = auto.send(Ctl::UiToggle);
             std::thread::sleep(Duration::from_secs_f32(secs));
             let _ = auto.send(Ctl::UiToggle);

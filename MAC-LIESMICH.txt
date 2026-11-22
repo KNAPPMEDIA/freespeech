@@ -1,0 +1,37 @@
+FreeSpeech für den Mac bauen
+============================
+
+Dieses Paket enthält den Quelltext. Eine fertige Mac-App lässt sich nur
+auf einem Mac erzeugen. Der Mac-Teil wurde bisher noch nie gebaut oder
+gestartet, der erste Versuch kann also mit einer Fehlermeldung enden.
+
+Voraussetzung: Mac mit Apple-Prozessor (M1 oder neuer), macOS 12 oder neuer.
+
+1. Einmalig installieren
+   - Xcode-Werkzeuge:  xcode-select --install
+   - Rust:             https://rustup.rs
+   - Node.js:          https://nodejs.org
+   - cmake:            brew install cmake
+
+2. Bauen
+   Terminal öffnen, in diesen Ordner wechseln und starten:
+
+       bash build-mac.sh
+
+   Das dauert beim ersten Mal 10 bis 20 Minuten.
+
+3. Ergebnis
+   src-tauri/target/release/bundle/macos/FreeSpeech.app
+   src-tauri/target/release/bundle/dmg/FreeSpeech_0.2.0_aarch64.dmg
+
+   Die App ist nicht bei Apple signiert. Beim ersten Öffnen:
+   Rechtsklick auf die App, dann "Öffnen".
+
+4. Beim ersten Start
+   - Mikrofon erlauben, wenn macOS fragt.
+   - Systemeinstellungen, Datenschutz & Sicherheit, Bedienungshilfen:
+     FreeSpeech einschalten. Ohne das gehen Tastenkürzel und Einfügen nicht.
+   - In der App ein Sprachmodell laden (Seite "Modelle").
+   - Kürzel: Control + Option halten, sprechen, loslassen.
+
+Wenn der Bau scheitert: die Datei build.log aus diesem Ordner zurückschicken.
