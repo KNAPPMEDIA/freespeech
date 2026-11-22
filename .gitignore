@@ -1,0 +1,8 @@
+dist/
+src-tauri/target/
+src-tauri/gen/
+tools/bench/target/
+crates/fs-mac/target/
+crates/fs-mac/Cargo.lock
+node_modules/
+*.log

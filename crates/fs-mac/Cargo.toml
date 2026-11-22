@@ -1,0 +1,13 @@
+# Alles, was FreeSpeech nur auf dem Mac braucht: globales Kuerzel, Einfuegen,
+# Berechtigungen, Autostart. Eigenes Paket, damit es sich auch von Windows aus
+# pruefen laesst:  cargo check --target aarch64-apple-darwin
+[package]
+name = "fs-mac"
+version = "0.1.0"
+edition = "2021"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.24"
+core-foundation = "0.10"
+
+[workspace]

@@ -1,0 +1,13 @@
+[package]
+name = "fs-bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+transcribe-cpp = { path = "../../vendor/transcribe-cpp", features = ["dynamic-backends"] }
+hound = "3"
+
+[profile.release]
+opt-level = 3
+
+[workspace]

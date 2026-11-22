@@ -1,0 +1,23 @@
+# Lokale Fassung von transcribe-cpp-sys 0.4.2 (MIT, handy-computer/transcribe.cpp).
+# Statt den C++-Kern zu bauen, werden die fertigen DLLs aus ../../engine genutzt:
+# src/transcribe_sys.rs ist die unveraenderte bindgen-Ausgabe, nur jeder
+# extern-Block traegt `#[link(name = "transcribe", kind = "raw-dylib")]`.
+[package]
+name = "transcribe-cpp-sys"
+version = "0.4.2"
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "transcribe_cpp_sys"
+path = "src/lib.rs"
+
+[features]
+default = []
+metal = []
+vulkan = []
+cuda = []
+rocm = []
+openmp = []
+shared = []
+dynamic-backends = ["shared"]

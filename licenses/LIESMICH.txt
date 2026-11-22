@@ -1,0 +1,9 @@
+FreeSpeech liefert diese fremden Teile mit:
+
+- transcribe.dll, ggml*.dll: transcribe.cpp 0.4.2 samt ggml, MIT.
+  Texte: transcribe.cpp-LICENSE.txt, transcribe.cpp-THIRD-PARTY-LICENSES.md
+- silero-vad-v6.2-F32.gguf: Silero VAD, MIT (siehe THIRD-PARTY-LICENSES).
+- msvcp140*.dll, vcruntime140*.dll, vcomp140.dll: Microsoft Visual C++ Redistributable.
+- vendor\transcribe-cpp, vendor\transcribe-cpp-sys: Rust-Bindings aus transcribe.cpp, MIT.
+
+Vorbild fuer Funktionsumfang und Bedienung: Handy von CJ Pais, MIT (github.com/cjpais/Handy).

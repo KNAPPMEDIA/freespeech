@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>FreeSpeech</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="leiste">
+    <div class="marke">
+      <svg class="marke-zeichen" viewBox="0 0 22 22" width="22" height="22" aria-hidden="true">
+        <rect x="2" y="9" width="3" height="4" rx="1"/>
+        <rect x="7" y="5" width="3" height="12" rx="1"/>
+        <rect x="12" y="2" width="3" height="18" rx="1"/>
+        <rect x="17" y="7" width="3" height="8" rx="1"/>
+      </svg>
+      <span class="marke-name">FreeSpeech</span>
+    </div>
+
+    <nav class="nav" aria-label="Bereiche">
+      <button type="button" class="nav-punkt" data-seite="diktat" aria-current="page">Diktat</button>
+      <button type="button" class="nav-punkt" data-seite="modelle">Modelle</button>
+      <button type="button" class="nav-punkt" data-seite="einstellungen">Einstellungen</button>
+      <button type="button" class="nav-punkt" data-seite="verlauf">Verlauf</button>
+      <button type="button" class="nav-punkt" data-seite="info">Info</button>
+    </nav>
+
+    <div class="leiste-fuss">
+      <div class="status klein" data-status data-zustand="idle">
+        <span class="punkt" aria-hidden="true"></span>
+        <span class="status-text">Bereit</span>
+      </div>
+      <div class="version messwert" id="leiste-version"></div>
+    </div>
+  </aside>
+
+  <div class="rahmen">
+    <main class="inhalt" id="inhalt">
+
+      <!-- ============ Diktat ============ -->
+      <section class="seite" data-seite="diktat" aria-labelledby="titel-diktat">
+        <header class="seitenkopf">
+          <h1 id="titel-diktat" tabindex="-1">Diktat</h1>
+          <div class="status" data-status data-zustand="idle" role="status" aria-live="polite">
+            <span class="punkt" aria-hidden="true"></span>
+            <span class="status-text">Bereit</span>
+          </div>
+        </header>
+
+        <div class="fehlerzeile" id="engine-fehler" role="alert" hidden>
+          <svg class="symbol" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M8 2.2 14.3 13.3H1.7Z"/><path d="M8 6.6v3.2"/><path d="M8 11.5v.1"/>
+          </svg>
+          <div>
+            <span class="beschriftung">Modell nicht geladen</span>
+            <p id="engine-fehler-text"></p>
+          </div>
+        </div>
+
+        <section class="einstieg" id="einstieg" aria-labelledby="einstieg-titel" hidden>
+          <h2 class="einstieg-titel" id="einstieg-titel">Noch kein Sprachmodell</h2>
+          <p class="einstieg-satz">FreeSpeech braucht ein Sprachmodell, um zu diktieren. Lade eines, das dauert je nach Leitung ein paar Minuten.</p>
+          <div class="kanaele" id="einstieg-liste" tabindex="-1"></div>
+          <p class="hinweis">Wird einmalig von HuggingFace geladen und liegt danach nur auf diesem Rechner.</p>
+        </section>
+
+        <div class="geraet" id="geraet" data-zustand="idle">
+          <div class="geraet-kuerzel">
+            <span class="beschriftung">Tastenkürzel</span>
+            <div class="kappen gross" id="diktat-kappen"></div>
+            <p class="hinweis" id="diktat-satz"></p>
+          </div>
+
+          <div class="geraet-pegel">
+            <div class="pegel-kopf">
+              <span class="beschriftung">Eingang</span>
+              <span class="messwert" id="pegel-wert">−∞ dB</span>
+            </div>
+            <div class="pegel" id="pegel" role="img" aria-label="Eingangspegel"></div>
+            <div class="pegel-skala" aria-hidden="true">
+              <span>−36</span><span>−24</span><span>−12</span><span>−6</span><span>−3</span><span>0 dB</span>
+            </div>
+          </div>
+
+          <div class="geraet-live" id="geraet-live" hidden>
+            <span class="beschriftung">Mitschrift</span>
+            <p id="live-text"></p>
+          </div>
+
+          <div class="geraet-fuss">
+            <button type="button" class="knopf aufnahme" id="aufnahme-knopf" aria-pressed="false">
+              <span class="aufnahme-zeichen" aria-hidden="true"></span>
+              <span id="aufnahme-text">Aufnahme starten</span>
+            </button>
+            <div class="modellzeile" id="modellzeile"></div>
+          </div>
+        </div>
+
+        <div class="zweispaltig">
+          <div class="feldblock">
+            <div class="blockkopf">
+              <label class="beschriftung" for="probefeld">Probefeld</label>
+            </div>
+            <textarea id="probefeld" class="textfeld" placeholder="Klick hier rein und diktiere zum Testen." spellcheck="false"></textarea>
+          </div>
+          <div class="feldblock">
+            <div class="blockkopf">
+              <h2 class="beschriftung">Zuletzt diktiert</h2>
+              <button type="button" class="textknopf" data-gehe="verlauf">Ganzer Verlauf</button>
+            </div>
+            <ul class="kurzliste" id="zuletzt"></ul>
+            <p class="leer klein" id="zuletzt-leer" hidden>Noch nichts diktiert.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ Modelle ============ -->
+      <section class="seite" data-seite="modelle" aria-labelledby="titel-modelle" hidden>
+        <header class="seitenkopf">
+          <h1 id="titel-modelle" tabindex="-1">Modelle</h1>
+          <span class="gespeichert" data-gespeichert aria-hidden="true">Gespeichert</span>
+        </header>
+
+        <section class="gruppe" aria-labelledby="g-rechnen">
+          <h2 class="gruppenkopf" id="g-rechnen">Rechengerät</h2>
+          <div class="gruppe-inhalt">
+            <div class="zeile">
+              <div class="zeile-text">
+                <span class="zeile-titel">Rechnen auf</span>
+                <span class="hinweis" id="geraet-hinweis" hidden>Auf diesem Rechner war die Grafikkarte im Test deutlich langsamer als der Prozessor.</span>
+              </div>
+              <div class="wahl" role="radiogroup" aria-label="Rechengerät">
+                <label><input type="radio" name="device" value="cpu" data-feld="device"><span>Prozessor (empfohlen)</span></label>
+                <label id="geraet-gpu" hidden><input type="radio" name="device" value="gpu" data-feld="device"><span>Grafikkarte</span></label>
+              </div>
+            </div>
+            <div class="zeile">
+              <div class="zeile-text">
+                <label class="zeile-titel" for="threads">Threads</label>
+                <span class="hinweis">0 = automatisch</span>
+              </div>
+              <input type="number" class="eingabe zahl" id="threads" min="0" max="128" step="1" inputmode="numeric" data-feld="threads" data-typ="zahl">
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe breit" aria-labelledby="g-modelle">
+          <div class="blockkopf">
+            <h2 class="gruppenkopf" id="g-modelle">Gefundene Modelle</h2>
+            <span class="messwert leise" id="modelle-anzahl"></span>
+          </div>
+          <div class="kanaele" id="modell-liste" tabindex="-1"></div>
+          <p class="leer" id="modelle-leer" hidden>Kein Modell gefunden. Lege eine .gguf-Datei in den Modellordner.</p>
+          <div class="unterblock" id="laden-block" role="group" aria-labelledby="g-laden" hidden>
+            <h3 class="gruppenkopf" id="g-laden">Modelle laden</h3>
+            <p class="hinweis">Wird einmalig von HuggingFace geladen und liegt danach nur auf diesem Rechner.</p>
+            <div class="kanaele" id="katalog-liste" tabindex="-1"></div>
+          </div>
+          <div class="ordnerzeile">
+            <button type="button" class="knopf" id="ordner-knopf">
+              <svg class="symbol" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                <path d="M1.8 4.2a1 1 0 0 1 1-1h3.1l1.4 1.6h5.9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H2.8a1 1 0 0 1-1-1Z"/>
+              </svg>
+              Modellordner öffnen
+            </button>
+            <div class="ordnertext">
+              <p class="hinweis">.gguf-Dateien werden in diesem Ordner und im HuggingFace-Cache gefunden.</p>
+              <p class="pfad messwert" id="ordner-pfad"></p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============ Einstellungen ============ -->
+      <section class="seite" data-seite="einstellungen" aria-labelledby="titel-einstellungen" hidden>
+        <header class="seitenkopf">
+          <h1 id="titel-einstellungen" tabindex="-1">Einstellungen</h1>
+          <span class="gespeichert" data-gespeichert aria-hidden="true">Gespeichert</span>
+        </header>
+
+        <section class="gruppe" aria-labelledby="g-kuerzel">
+          <h2 class="gruppenkopf" id="g-kuerzel">Tastenkürzel</h2>
+          <div class="gruppe-inhalt">
+            <div class="zeile" data-kuerzel="hotkey">
+              <div class="zeile-text"><span class="zeile-titel">Diktieren</span></div>
+              <div class="zeile-regler">
+                <div class="kappen"></div>
+                <span class="lausch-text" role="status"></span>
+                <button type="button" class="knopf klein" data-kuerzel-knopf="hotkey">Ändern</button>
+              </div>
+            </div>
+            <div class="zeile" data-kuerzel="cancel_key">
+              <div class="zeile-text">
+                <span class="zeile-titel">Abbruchtaste</span>
+                <span class="hinweis">Verwirft die laufende Aufnahme.</span>
+              </div>
+              <div class="zeile-regler">
+                <div class="kappen"></div>
+                <span class="lausch-text" role="status"></span>
+                <button type="button" class="knopf klein" data-kuerzel-knopf="cancel_key">Ändern</button>
+              </div>
+            </div>
+            <div class="zeile">
+              <div class="zeile-text">
+                <span class="zeile-titel">Modus</span>
+                <span class="hinweis" id="modus-hinweis"></span>
+              </div>
+              <div class="wahl" role="radiogroup" aria-label="Modus">
+                <label><input type="radio" name="mode" value="ptt" data-feld="mode"><span>Halten</span></label>
+                <label><input type="radio" name="mode" value="toggle" data-feld="mode"><span>Umschalten</span></label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-mikro">
+          <h2 class="gruppenkopf" id="g-mikro">Mikrofon</h2>
+          <div class="gruppe-inhalt">
+            <div class="zeile">
+              <div class="zeile-text"><label class="zeile-titel" for="mikrofon">Eingang</label></div>
+              <span class="auswahl"><select id="mikrofon" data-feld="microphone"></select></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-sprache">
+          <h2 class="gruppenkopf" id="g-sprache">Sprache</h2>
+          <div class="gruppe-inhalt">
+            <div class="zeile">
+              <div class="zeile-text"><label class="zeile-titel" for="sprache">Gesprochene Sprache</label></div>
+              <span class="auswahl"><select id="sprache" data-feld="language">
+                <option value="auto">Automatisch</option>
+                <option value="de">Deutsch</option>
+                <option value="en">Englisch</option>
+                <option value="fr">Französisch</option>
+                <option value="es">Spanisch</option>
+                <option value="it">Italienisch</option>
+                <option value="nl">Niederländisch</option>
+                <option value="pt">Portugiesisch</option>
+                <option value="pl">Polnisch</option>
+                <option value="tr">Türkisch</option>
+                <option value="ru">Russisch</option>
+                <option value="uk">Ukrainisch</option>
+                <option value="ja">Japanisch</option>
+              </select></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-einfuegen">
+          <h2 class="gruppenkopf" id="g-einfuegen">Einfügen</h2>
+          <div class="gruppe-inhalt">
+            <div class="zeile">
+              <div class="zeile-text"><label class="zeile-titel" for="methode">Methode</label></div>
+              <span class="auswahl"><select id="methode" data-feld="paste_method">
+                <option value="ctrl_v">Über Zwischenablage (Strg+V)</option>
+                <option value="type">Direkt tippen</option>
+                <option value="none">Nicht einfügen, nur Verlauf</option>
+              </select></span>
+            </div>
+            <label class="zeile" id="zeile-zwischenablage">
+              <span class="zeile-text"><span class="zeile-titel">Zwischenablage danach wiederherstellen</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="restore_clipboard">
+            </label>
+            <label class="zeile">
+              <span class="zeile-text"><span class="zeile-titel">Leerzeichen anhängen</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="trailing_space">
+            </label>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-woerter">
+          <h2 class="gruppenkopf" id="g-woerter">Eigene Wörter</h2>
+          <div class="gruppe-inhalt">
+            <div class="block">
+              <label class="zeile-titel" for="vokabular">Begriffe, die das Modell bevorzugen soll</label>
+              <p class="hinweis">Eine Zeile pro Begriff, zum Beispiel Namen, Marken oder Fachwörter.</p>
+              <textarea id="vokabular" class="textfeld mittel" spellcheck="false" autocomplete="off"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-ersetzen">
+          <h2 class="gruppenkopf" id="g-ersetzen">Ersetzungen</h2>
+          <div class="gruppe-inhalt">
+            <div class="block">
+              <p class="hinweis">Was das Modell immer wieder falsch schreibt, wird nach dem Diktat ersetzt.</p>
+              <div class="ers-kopf" id="ers-kopf" aria-hidden="true">
+                <span class="beschriftung">Gehört</span>
+                <span></span>
+                <span class="beschriftung">Schreiben als</span>
+                <span></span>
+              </div>
+              <div class="ers-liste" id="ersetzungen"></div>
+              <button type="button" class="knopf klein" id="ers-neu">
+                <svg class="symbol" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9"/></svg>
+                Zeile hinzufügen
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="gruppe" aria-labelledby="g-verhalten">
+          <h2 class="gruppenkopf" id="g-verhalten">Verhalten</h2>
+          <div class="gruppe-inhalt">
+            <label class="zeile">
+              <span class="zeile-text"><span class="zeile-titel">Anzeige am Bildschirmrand</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="overlay">
+            </label>
+            <label class="zeile">
+              <span class="zeile-text">
+                <span class="zeile-titel">Text schon beim Sprechen zeigen</span>
+                <span class="hinweis">Rechnet während der Aufnahme mit. Eingefügt wird trotzdem erst der fertige Text.</span>
+              </span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="live_preview">
+            </label>
+            <label class="zeile">
+              <span class="zeile-text"><span class="zeile-titel">Signaltöne</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="sounds">
+            </label>
+            <label class="zeile">
+              <span class="zeile-text"><span class="zeile-titel">Mit Windows starten</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="autostart">
+            </label>
+            <label class="zeile">
+              <span class="zeile-text"><span class="zeile-titel">Im Hintergrund starten</span></span>
+              <input type="checkbox" class="schalter" role="switch" data-feld="start_hidden">
+            </label>
+            <div class="zeile">
+              <div class="zeile-text">
+                <label class="zeile-titel" for="verlauf-grenze">Verlauf: Einträge behalten</label>
+                <span class="hinweis">0 bis 500</span>
+              </div>
+              <input type="number" class="eingabe zahl" id="verlauf-grenze" min="0" max="500" step="1" inputmode="numeric" data-feld="history_limit" data-typ="zahl">
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============ Verlauf ============ -->
+      <section class="seite" data-seite="verlauf" aria-labelledby="titel-verlauf" hidden>
+        <header class="seitenkopf">
+          <div class="kopf-links">
+            <h1 id="titel-verlauf" tabindex="-1">Verlauf</h1>
+            <span class="messwert leise" id="verlauf-anzahl"></span>
+          </div>
+          <div class="kopf-rechts">
+            <button type="button" class="knopf klein" id="leeren-knopf">Verlauf leeren</button>
+            <div class="rueckfrage" id="leeren-frage" role="group" aria-label="Verlauf leeren" hidden>
+              <span id="leeren-text"></span>
+              <button type="button" class="knopf klein akzent" id="leeren-ja">Ja, leeren</button>
+              <button type="button" class="knopf klein" id="leeren-nein">Abbrechen</button>
+            </div>
+          </div>
+        </header>
+        <div class="verlauf" id="verlauf-liste" tabindex="-1"></div>
+        <p class="leer" id="verlauf-leer" hidden>Noch nichts diktiert. Halte dein Kürzel und sprich.</p>
+      </section>
+
+      <!-- ============ Info ============ -->
+      <section class="seite" data-seite="info" aria-labelledby="titel-info" hidden>
+        <header class="seitenkopf">
+          <h1 id="titel-info" tabindex="-1">Info</h1>
+        </header>
+
+        <p class="leitsatz">Läuft komplett lokal, kein Ton verlässt den Rechner.</p>
+
+        <dl class="datenblatt">
+          <div><dt class="beschriftung">Version</dt><dd class="messwert" id="info-version"></dd></div>
+          <div><dt class="beschriftung">Engine</dt><dd>transcribe.cpp <span class="leise">(MIT)</span></dd></div>
+          <div><dt class="beschriftung">Vorbild</dt><dd>Handy <span class="leise">(MIT)</span></dd></div>
+          <div><dt class="beschriftung">Sprachmodelle</dt><dd>Parakeet Primeline <span class="leise">(primeLine, CC BY 4.0)</span> und Canary 180M Flash <span class="leise">(NVIDIA, CC BY 4.0)</span>, als GGUF von handy-computer.</dd></div>
+        </dl>
+
+        <div class="ordnerzeile">
+          <button type="button" class="knopf" id="beenden-knopf">
+            <svg class="symbol" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <path d="M8 2v5.5"/><path d="M4.6 4.3a5 5 0 1 0 6.8 0"/>
+            </svg>
+            FreeSpeech beenden
+          </button>
+          <div class="ordnertext">
+            <p class="hinweis">Fenster schließen beendet FreeSpeech nicht. Die App bleibt im Infobereich neben der Uhr und hört weiter auf dein Kürzel.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="meldung" id="meldung" role="alert" hidden>
+      <span id="meldung-text"></span>
+      <button type="button" class="textknopf" id="meldung-zu">Schließen</button>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
