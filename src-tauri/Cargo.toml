@@ -3,6 +3,8 @@ name = "freespeech"
 version = "0.2.0"
 description = "FreeSpeech: lokales Diktieren per Tastenkuerzel"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/KNAPPMEDIA/freespeech"
 
 [[bin]]
 name = "FreeSpeech"

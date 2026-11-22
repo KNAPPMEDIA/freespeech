@@ -1381,7 +1381,7 @@
       history: [
         { id: jetzt - 4 * MIN, text: "Schneid den Einstieg bitte auf die ersten drei Sekunden runter und zieh den Titel einen halben Takt nach vorn.", audio_ms: 7400, took_ms: 2150, model: "Parakeet Primeline" },
         { id: jetzt - 52 * MIN, text: "Notiz für morgen: Das Octane-Material für die Dose braucht noch mehr Rauheit an den Kanten, sonst wirkt das Etikett aufgeklebt.", audio_ms: 9800, took_ms: 3050, model: "Parakeet Primeline" },
-        { id: jetzt - 26 * 60 * MIN, text: "Hallo Jan, die zweite Fassung liegt im Ordner. Sag mir bis Freitag, ob der Ton so passt.", audio_ms: 6100, took_ms: 1700, model: "Parakeet Primeline" },
+        { id: jetzt - 26 * 60 * MIN, text: "Hallo Anna, die zweite Fassung liegt im Ordner. Sag mir bis Freitag, ob der Ton so passt.", audio_ms: 6100, took_ms: 1700, model: "Parakeet Primeline" },
         { id: jetzt - 3 * 24 * 60 * MIN, text: "Das Set am Samstag startet um dreiundzwanzig Uhr, Soundcheck ist eine Stunde vorher.", audio_ms: 5600, took_ms: 2900, model: "Canary 180m Flash" },
       ],
       hotkey_labels: ["Strg links", "Win links"],

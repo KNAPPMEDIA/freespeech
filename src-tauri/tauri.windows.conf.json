@@ -5,7 +5,9 @@
     ],
     "resources": {
       "../engine/": "./",
-      "../licenses/": "licenses/"
+      "../licenses/": "licenses/",
+      "../LICENSE": "licenses/FreeSpeech-LICENSE.txt",
+      "../THIRD-PARTY-NOTICES.md": "licenses/THIRD-PARTY-NOTICES.md"
     },
     "windows": {
       "webviewInstallMode": {

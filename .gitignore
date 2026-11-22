@@ -6,3 +6,6 @@ crates/fs-mac/target/
 crates/fs-mac/Cargo.lock
 node_modules/
 *.log
+
+# Werbevideo: Produktionsmaterial, gehoert nicht zum Programm
+werbung/
